@@ -83,26 +83,26 @@ class InsuranceData(BaseModel):
     company: str = Field(description="Insurance company name")
     vehicle_name: str = Field(description="Vehicle description (brand, model, year)")
     forma_de_pago: str = Field(description="Payment method")
-    danos_materiales: str = Field(description="Material damage coverage amount")
+    danos_materiales: float = Field(description="Material damage coverage amount")
     deducible_dm: str = Field(description="Material damage deductible")
-    robo_total: str = Field(description="Total theft coverage amount")
+    robo_total: float = Field(description="Total theft coverage amount")
     deducible_rt: str = Field(description="Theft deductible")
-    responsabilidad_civil: str = Field(description="Civil liability coverage amount")
-    gastos_medicos_ocupantes: str = Field(description="Occupant medical expenses coverage")
+    responsabilidad_civil: float = Field(description="Civil liability coverage amount")
+    gastos_medicos_ocupantes: float = Field(description="Occupant medical expenses coverage")
     asistencia_legal: str = Field(description="Legal assistance coverage")
     asistencia_viajes: str = Field(description="Travel assistance coverage")
-    accidente_conductor: str = Field(description="Driver accident coverage")
-    responsabilidad_civil_catastrofica: str = Field(
+    accidente_conductor: float = Field(description="Driver accident coverage")
+    responsabilidad_civil_catastrofica: float = Field(
         description="Catastrophic civil liability coverage"
     )
     desbielamiento_agua_motor: str = Field(
         description="Engine water damage coverage"
     )
-    prima_neta: str = Field(description="Net premium amount")
-    recargos: str = Field(description="Surcharges amount")
-    derechos_poliza: str = Field(description="Policy rights amount")
-    iva: str = Field(description="Tax amount")
-    prima_total: str = Field(description="Total premium amount")
+    prima_neta: float = Field(description="Net premium amount")
+    recargos: float = Field(description="Surcharges amount")
+    derechos_poliza: float = Field(description="Policy rights amount")
+    iva: float = Field(description="Tax amount")
+    prima_total: float = Field(description="Total premium amount")
 
 
 class HDISegurosData(InsuranceData):
@@ -277,7 +277,7 @@ def _to_num(value: str) -> float:
         return 0.0
 
 
-def calculate_financials(result: Dict[str, str]) -> Dict[str, str]:
+def calculate_financials(result: Dict[str, float]) -> Dict[str, float]:
     """Calculate IVA (16%) and Prima Total."""
     try:
         prima_neta = _to_num(result.get("Prima Neta", "0"))
@@ -296,7 +296,7 @@ def calculate_financials(result: Dict[str, str]) -> Dict[str, str]:
     return result
 
 
-def apply_standard_defaults(result: Dict[str, str]) -> Dict[str, str]:
+def apply_standard_defaults(result: Dict[str, float]) -> Dict[str, float]:
     defaults = {
         "Asistencia Viajes": "Amparada",
         "Atlas Cero Plus por PT de DM": "Amparada",
@@ -313,7 +313,7 @@ def apply_standard_defaults(result: Dict[str, str]) -> Dict[str, str]:
     return result
 
 
-def convert_to_standard_format(extracted: Dict[str, Any]) -> Dict[str, str]:
+def convert_to_standard_format(extracted: Dict[str, Any]) -> Dict[str, float]:
     """Map model keys to standardized Spanish labels."""
     mapping = {
         "company": "company",
@@ -337,7 +337,7 @@ def convert_to_standard_format(extracted: Dict[str, Any]) -> Dict[str, str]:
         "prima_total": "Prima Total",
     }
 
-    result: Dict[str, str] = {}
+    result: Dict[str, float] = {}
     for src, dst in mapping.items():
         val = extracted.get(src, "") if isinstance(extracted, dict) else ""
         result[dst] = val if isinstance(val, str) else (json.dumps(val) if val is not None else "")
@@ -390,7 +390,7 @@ def _safe_get_extraction(obj: Any) -> Optional[Dict[str, Any]]:
     return None
 
 
-def parse_pdf_with_landing_ai(pdf_content: bytes, filename: str = "document.pdf") -> Optional[Dict[str, str]]:
+def parse_pdf_with_landing_ai(pdf_content: bytes, filename: str = "document.pdf") -> Optional[Dict[str, float]]:
     """Parse PDF using Landing AI's Agentic Document Extraction."""
     if not _LANDING_AI_AVAILABLE:
         return None
