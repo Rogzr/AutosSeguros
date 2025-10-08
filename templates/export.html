@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Export - Comparativo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    @page { size: A4 landscape; margin: 12mm; }
+    .site-header, .site-footer { display: none; }
+    .card { box-shadow: none; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <h2>Comparativo de Coberturas</h2>
+      <div class="table-wrapper">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Campo</th>
+              {% for r in results %}
+              <th style="--brand: {{ r._brand_color or '#444' }}">
+                <div class="company-header">
+                  {% if r._logo %}
+                    <img src="{{ r._logo }}" alt="{{ r.company }} logo" class="logo">
+                  {% else %}
+                    <span class="company-name">{{ r.company }}</span>
+                  {% endif %}
+                  <div class="filename">{{ r._filename }}</div>
+                </div>
+              </th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% set fields = [
+              'Vehículo','Forma de Pago','Daños Materiales','Deducible - DM','Robo Total','Deducible - RT',
+              'Responsabilidad Civil','Gastos Medicos Ocupantes','Asistencia Legal','Asistencia Viajes',
+              'Atlas Cero Plus por PT de DM','Accidente al conductor','Responsabilidad civil catastrofica',
+              'Desbielamiento por agua al motor','Prima Neta','Recargos','Derechos de Póliza','IVA','Prima Total'] %}
+            {% for field in fields %}
+            <tr>
+              <td class="row-label">{{ field }}</td>
+              {% for r in results %}
+              <td>{{ r.get(field, 'N/A') }}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+
+

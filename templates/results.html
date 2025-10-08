@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resultados - Comparador de Seguros</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <h1>Resultados</h1>
+    <a href="{{ url_for('index') }}" class="btn">← Volver</a>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Comparativo</h2>
+
+      <div class="table-wrapper">
+        <table class="comparison-table" id="comparisonTable">
+          <thead>
+            <tr>
+              <th>Campo</th>
+              {% for r in results %}
+                <th style="--brand: {{ r._brand_color or '#444' }}">
+                  <div class="company-header">
+                    {% if r._logo %}
+                      <img src="{{ r._logo }}" alt="{{ r.company }} logo" class="logo">
+                    {% else %}
+                      <span class="company-name">{{ r.company }}</span>
+                    {% endif %}
+                    <div class="filename">{{ r._filename }}</div>
+                  </div>
+                </th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% set fields = [
+              'Vehículo','Forma de Pago','Daños Materiales','Deducible - DM','Robo Total','Deducible - RT',
+              'Responsabilidad Civil','Gastos Medicos Ocupantes','Asistencia Legal','Asistencia Viajes',
+              'Atlas Cero Plus por PT de DM','Accidente al conductor','Responsabilidad civil catastrofica',
+              'Desbielamiento por agua al motor','Prima Neta','Recargos','Derechos de Póliza','IVA','Prima Total'] %}
+            {% for field in fields %}
+            <tr>
+              <td class="row-label">{{ field }}</td>
+              {% for r in results %}
+                {% set value = r.get(field, 'N/A') %}
+                <td contenteditable="true" data-field="{{ field }}">{{ value }}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="recalcBtn">Recalcular IVA</button>
+        <a class="btn primary" id="exportBtn" href="{{ url_for('export_pdf', data_b64=data_b64) }}">Exportar a PDF</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">&copy; {{ 2025 }} Comparador de Seguros</footer>
+
+  <script>
+    (function(){
+      const table = document.getElementById('comparisonTable');
+      const recalcBtn = document.getElementById('recalcBtn');
+      const exportBtn = document.getElementById('exportBtn');
+
+      function toNum(s){
+        if(!s) return 0;
+        const cleaned = (''+s).replace(/[^0-9.,-]/g,'').replace(/,/g,'');
+        const n = parseFloat(cleaned);
+        return isNaN(n) ? 0 : n;
+      }
+      function currency(n){ return new Intl.NumberFormat('es-MX', {style:'currency', currency:'MXN'}).format(n); }
+
+      function recalc(){
+        const fields = ['Prima Neta','Recargos','Derechos de Póliza','IVA','Prima Total'];
+        const headerCells = table.tHead.rows[0].cells;
+        const bodyRows = Array.from(table.tBodies[0].rows);
+
+        const colCount = headerCells.length - 1;
+        const valuesByCol = {};
+
+        for(let c=0;c<colCount;c++){
+          valuesByCol[c] = {};
+        }
+
+        bodyRows.forEach(row => {
+          const field = row.cells[0].textContent.trim();
+          const idx = fields.indexOf(field);
+          if(idx === -1 && field !== 'Prima Neta' && field !== 'Recargos' && field !== 'Derechos de Póliza' && field !== 'IVA' && field !== 'Prima Total') return;
+          for(let c=0;c<colCount;c++){
+            const cell = row.cells[c+1];
+            valuesByCol[c][field] = cell.textContent.trim();
+          }
+        });
+
+        for(let c=0;c<colCount;c++){
+          const primaNeta = toNum(valuesByCol[c]['Prima Neta']);
+          const recargos = toNum(valuesByCol[c]['Recargos']);
+          const derechos = toNum(valuesByCol[c]['Derechos de Póliza']);
+          const iva = (primaNeta + recargos + derechos) * 0.16;
+          const total = primaNeta + recargos + derechos + iva;
+
+          bodyRows.forEach(row => {
+            const field = row.cells[0].textContent.trim();
+            if(field === 'IVA') row.cells[c+1].textContent = currency(iva);
+            if(field === 'Prima Total') row.cells[c+1].textContent = currency(total);
+          });
+        }
+      }
+
+      recalcBtn.addEventListener('click', recalc);
+    })();
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,16 @@
+[project]
+name = "autosseguros"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13.0"
+dependencies = [
+    "agentic-doc>=0.3.3",
+    "asgiref>=3.10.0",
+    "flask>=3.1.2",
+    "pydantic>=2.12.0",
+    "pymupdf>=1.26.4",
+    "python-dotenv>=1.1.1",
+    "uvicorn>=0.37.0",
+    "weasyprint>=66.0",
+]

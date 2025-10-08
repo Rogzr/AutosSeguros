@@ -1,0 +1,9 @@
+Flask
+agentic-doc
+PyMuPDF
+WeasyPrint
+uvicorn
+asgiref
+pydantic
+python-dotenv
+
